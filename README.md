@@ -18,15 +18,17 @@ fixed, err := llmjsonrepair.Repair(`{"title":"甲","ids":["n1","n2"]}}`)
 - 全角括号、全角冒号逗号（`｛"a"："甲"，"b"：［1，2］｝`），字符串里的全角标点不动
 - 几个 JSON 连着写（`{"a":1}{"b":2}`），包成一个数组
 - 连续逗号（`[1,,2]`、`{"a":1,,"b":2}`）
-- ```` ```json ```` 围栏、注释、JSONP、Python 的 `None`/`True`/`False`
+- ````json` 围栏、注释、JSONP、Python 的 `None`/`True`/`False`
 - 修不好时回 error，不会 panic
 
 ## 致谢
 
 - [josdejong/jsonrepair](https://github.com/josdejong/jsonrepair)：最早的 JS 版，修法都源自它
 - [kaptinlin/jsonrepair](https://github.com/kaptinlin/jsonrepair)：它的 Go 移植，本库从 v0.4.9 拉出来改的
-- [RealAlexandreAI/json-repair](https://github.com/RealAlexandreAI/json-repair)、[mangiucugna/json_repair](https://github.com/mangiucugna/json_repair)：参考了它们修大模型输出的思路，没有复制代码
+- [RealAlexandreAI/json-repair](https://github.com/RealAlexandreAI/json-repair)、[mangiucugna/json_repair](https://github.com/mangiucugna/json_repair)：参考了它们修大模型输出的思路
+
+
 
 ## 许可证
 
-MIT，原作者的版权保留在 `LICENSE` 里。
+MIT
