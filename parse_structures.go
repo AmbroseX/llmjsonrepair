@@ -155,6 +155,11 @@ func parseObjectMember(text *[]rune, i *int, output *strings.Builder, childDepth
 
 	parseWhitespaceAndSkipComments(text, i, output, true)
 	processedColon := parseCharacter(text, i, output, codeColon)
+	if processedColon {
+		skipExtraColons(text, i, output)
+		parseWhitespaceAndSkipComments(text, i, output, true)
+		skipWordsBeforeValue(text, i)
+	}
 	truncatedText := *i >= len(*text)
 	if !processedColon {
 		if !truncatedText && !isStartOfValue((*text)[*i]) {
@@ -252,6 +257,7 @@ func trimCommaInsideLastString(output *strings.Builder) {
 // parseNewlineDelimitedJSON parses Newline Delimited JSON (NDJSON) from the input text.
 func parseNewlineDelimitedJSON(text *[]rune, i *int, output *strings.Builder) error {
 	for {
+		skipListMarker(text, i)
 		processedValue, err := parseValue(text, i, output, 0)
 		if err != nil {
 			return err

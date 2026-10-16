@@ -114,9 +114,13 @@ func writeNumber(num string, output *strings.Builder) {
 var jsonKeywords = []struct{ name, value string }{
 	{"true", "true"}, {"false", "false"}, {"null", "null"},
 	{"True", "true"}, {"False", "false"}, {"None", "null"},
+	{"TRUE", "true"}, {"FALSE", "false"}, {"NULL", "null"}, {"Null", "null"},
+	// JSON 没有这几个值，写成 null
+	{"NaN", "null"}, {"Infinity", "null"}, {"-Infinity", "null"},
 }
 
-// parseKeywords parses JSON keywords (true, false, null) and Python keywords (True, False, None).
+// parseKeywords parses JSON keywords (true, false, null), Python keywords (True, False, None),
+// 全大写的写法（TRUE、FALSE、NULL），以及 NaN、Infinity、-Infinity。
 func parseKeywords(text *[]rune, i *int, output *strings.Builder) bool {
 	for _, kw := range jsonKeywords {
 		if parseKeyword(text, i, output, kw.name, kw.value) {

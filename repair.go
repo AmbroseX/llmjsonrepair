@@ -34,6 +34,9 @@ func Repair(text string) (string, error) {
 
 	parseMarkdownCodeBlock(&runes, &i, []string{"```", "[```", "{```"}, &output)
 
+	parseWhitespaceAndSkipComments(&runes, &i, &output, true)
+	skipListMarker(&runes, &i)
+
 	success, err := parseValue(&runes, &i, &output, 0)
 	if err != nil {
 		return "", err
@@ -72,6 +75,7 @@ func Repair(text string) (string, error) {
 // 换行或逗号隔开的多个值（NDJSON），和不隔开直接连着写的多个对象、数组（{"a":1}{"b":2}、[1][2]），
 // 都包成一个数组。processedComma 表示第一个值后面已经读掉了一个逗号。
 func parseFollowingValues(text *[]rune, i *int, output *strings.Builder, processedComma bool) error {
+	skipListMarker(text, i)
 	more := *i < len(*text) && isStartOfValue((*text)[*i])
 	switch {
 	case more && endsWithCommaOrNewline(output.String()):

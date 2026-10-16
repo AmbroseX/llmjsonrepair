@@ -176,3 +176,55 @@ func TestLLMConsecutiveCommas(t *testing.T) {
 	// 字符串里的逗号不动
 	require.Equal(t, []any{"a,,b", ",,"}, repairToAny(t, `["a,,b",",,"]`))
 }
+
+// 一个值带两个冒号，多余的丢掉
+func TestLLMDoubleColon(t *testing.T) {
+	require.Equal(t, obj{"a": 1.0}, repairToAny(t, `{"a"::1}`))
+	require.Equal(t, obj{"a": "x"}, repairToAny(t, `{"a": : "x"}`))
+	require.Equal(t, obj{"a": "x", "b": 2.0}, repairToAny(t, `{"a":::"x","b"::2}`))
+	// 字符串里的冒号不动
+	require.Equal(t, obj{"a": "::"}, repairToAny(t, `{"a"::"::"}`))
+}
+
+// 冒号后面、带引号的值前面夹了词，词丢掉，留引号里的值
+func TestLLMWordsBeforeValue(t *testing.T) {
+	require.Equal(t, obj{"a": "x"}, repairToAny(t, `{"a": value is "x"}`))
+	require.Equal(t, obj{"a": "x", "b": "y"}, repairToAny(t, `{"a": the value "x", "b": is 'y'}`))
+	// 值本身是 true、null 的，后面少了逗号，不能当成夹的词
+	require.Equal(t, obj{"a": true, "b": 1.0}, repairToAny(t, `{"a": true "b": 1}`))
+	// 后面的带引号内容其实是下一个键，也不是夹的词
+	require.Equal(t, obj{"a": "foo", "b": 1.0}, repairToAny(t, `{"a": foo "b": 1}`))
+	// 不带引号的值不动
+	require.Equal(t, obj{"a": "it is 5"}, repairToAny(t, `{"a": it is 5}`))
+}
+
+// 开头带 "- " 列表符号
+func TestLLMListMarker(t *testing.T) {
+	require.Equal(t, obj{"a": 1.0}, repairToAny(t, `- {"a":1}`))
+	require.Equal(t, obj{"a": 1.0}, repairToAny(t, "  -   {\"a\":1}"))
+	require.Equal(t, []any{1.0}, repairToAny(t, `- [1]`))
+	require.Equal(t, []any{obj{"a": 1.0}, obj{"b": 2.0}}, repairToAny(t, "- {\"a\":1}\n- {\"b\":2}"))
+	require.Equal(t, []any{obj{"a": 1.0}, obj{"b": 2.0}, obj{"c": 3.0}}, repairToAny(t, "- {\"a\":1}\n- {\"b\":2}\n- {\"c\":3}\n"))
+	// 负数不是列表符号
+	require.Equal(t, []any{-1.0, -2.0}, repairToAny(t, `[-1, -2]`))
+}
+
+// 单词里的撇号是正文，不当成字符串结尾
+func TestLLMApostropheInWord(t *testing.T) {
+	require.Equal(t, obj{"text": "it's ok"}, repairToAny(t, `{'text': 'it's ok'}`))
+	require.Equal(t, obj{"text": "it's ok", "b": "don't stop"}, repairToAny(t, `{'text': 'it's ok', 'b': 'don't stop'}`))
+	require.Equal(t, []any{"it's", "x"}, repairToAny(t, `['it's', 'x']`))
+	// 原来的单引号字符串修法照旧
+	require.Equal(t, obj{"a": "b"}, repairToAny(t, `{'a': 'b'}`))
+	require.Equal(t, obj{"a": "It's"}, repairToAny(t, `{'a': 'It\'s'}`))
+}
+
+// TRUE、FALSE、NULL、NaN、Infinity 转成 JSON 的值，字符串里的不动
+func TestLLMUpperCaseConstants(t *testing.T) {
+	require.Equal(t, obj{"a": true, "b": false, "c": nil, "d": nil}, repairToAny(t, `{"a": TRUE, "b": FALSE, "c": NULL, "d": None}`))
+	require.Equal(t, obj{"a": nil, "b": nil, "c": nil}, repairToAny(t, `{"a": NaN, "b": Infinity, "c": -Infinity}`))
+	require.Equal(t, []any{nil, nil, nil, true}, repairToAny(t, `[NaN, Infinity, -Infinity, TRUE]`))
+	require.Equal(t, obj{"a": "NaN TRUE None -Infinity"}, repairToAny(t, `{"a": "NaN TRUE None -Infinity"}`))
+	// 不带引号的键不动
+	require.Equal(t, obj{"NaN": 1.0}, repairToAny(t, `{NaN: 1}`))
+}

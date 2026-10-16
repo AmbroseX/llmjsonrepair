@@ -18,7 +18,9 @@ fixed, err := llmjsonrepair.Repair(`{"title":"甲","ids":["n1","n2"]}}`)
 - 全角括号、全角冒号逗号（`｛"a"："甲"，"b"：［1，2］｝`），字符串里的全角标点不动
 - 几个 JSON 连着写（`{"a":1}{"b":2}`），包成一个数组
 - 连续逗号（`[1,,2]`、`{"a":1,,"b":2}`）
-- ````json` 围栏、注释、JSONP、Python 的 `None`/`True`/`False`
+- 多余的冒号（`{"a"::1}`）、冒号后面夹的词（`{"a": value is "x"}`）、开头的 `- ` 列表符号
+- 单词里的撇号（`{'text': 'it's ok'}`）
+- ````json` 围栏、注释、JSONP、`None`/`True`/`False`/`TRUE`/`NULL`，`NaN`/`Infinity` 转成 `null`
 - 修不好时回 error，不会 panic
 
 ## 致谢

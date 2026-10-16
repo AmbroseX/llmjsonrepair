@@ -165,8 +165,12 @@ func (p *stringParser) onQuote() stringStep {
 	resetOutput(output, output.String()[:p.oBefore])
 	*i = iQuote + 1
 
-	// repair unescaped quote
-	revertedStr := p.str.String()[:oQuote] + "\\\""
+	// repair unescaped quote；单词里的撇号（it's）是正文，原样留着
+	inner := "\\\""
+	if isWordApostrophe(text, iQuote) {
+		inner = string((*text)[iQuote])
+	}
+	revertedStr := p.str.String()[:oQuote] + inner
 	p.str.Reset()
 	p.str.WriteString(revertedStr)
 	return stringContinue
