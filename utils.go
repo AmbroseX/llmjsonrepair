@@ -452,7 +452,7 @@ func isUNCPath(content string) bool {
 	}
 
 	partIndex := 0
-	for part := range strings.SplitSeq(content, `\`) {
+	for _, part := range strings.Split(content, `\`) {
 		switch partIndex {
 		case 2:
 			if len(part) == 0 {
@@ -505,7 +505,7 @@ func isURLPath(content string) bool {
 func countValidPathSegments(content, separator string) int {
 	count := 0
 
-	for part := range strings.SplitSeq(content, separator) {
+	for _, part := range strings.Split(content, separator) {
 		part = strings.TrimSpace(part)
 		if len(part) > 0 && part != "." && part != ".." {
 			count++

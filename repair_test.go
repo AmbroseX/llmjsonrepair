@@ -1498,7 +1498,7 @@ func BenchmarkRepair(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			b.ReportAllocs()
-			for b.Loop() {
+			for range b.N {
 				if _, err := Repair(tc.input); err != nil {
 					b.Fatal(err)
 				}
